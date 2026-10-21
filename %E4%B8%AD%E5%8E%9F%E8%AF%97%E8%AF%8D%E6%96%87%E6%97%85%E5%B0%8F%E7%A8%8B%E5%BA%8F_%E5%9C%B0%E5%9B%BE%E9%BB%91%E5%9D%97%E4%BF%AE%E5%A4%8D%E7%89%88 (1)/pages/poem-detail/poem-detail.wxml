@@ -1,0 +1,13 @@
+<view class="container">
+  <view class="card">
+    <view class="tag">{{poem.type}}</view>
+    <view class="title">{{poem.title}}</view>
+    <view class="subtitle">{{poem.author}} · {{poem.dynasty}}</view>
+    <view class="text">{{poem.text}}</view>
+  </view>
+  <view class="card">
+    <view class="section-title">关联地点</view>
+    <view class="subtitle">📍 {{poem.location}}</view>
+  </view>
+  <view class="btn" bindtap="collect">收藏这首诗</view>
+</view>

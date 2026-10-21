@@ -1,0 +1,6 @@
+.hero { background: linear-gradient(135deg,#FFFDF8,#F2E3C8); }
+.quote { font-size: 30rpx; line-height: 1.8; margin: 30rpx 0; color:#5C4033; }
+.hero-actions { display:flex; gap:18rpx; } .hero-actions .btn,.hero-actions .btn-light { flex:1; }
+.poem-title {font-size:32rpx;font-weight:700;color:#6F252E}.poem-text{font-size:34rpx;line-height:2;margin:20rpx 0}.poem-note{font-size:23rpx;color:#8A817A}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20rpx}.feature{margin:0;text-align:center;padding:28rpx 16rpx}.feature .icon{font-size:46rpx}.feature text{display:block;font-size:20rpx;color:#9A918A;margin-top:8rpx}
+.route{display:flex;justify-content:space-between;align-items:center}.route-name{font-size:28rpx;font-weight:700}.arrow{font-size:48rpx;color:#8C2F39}

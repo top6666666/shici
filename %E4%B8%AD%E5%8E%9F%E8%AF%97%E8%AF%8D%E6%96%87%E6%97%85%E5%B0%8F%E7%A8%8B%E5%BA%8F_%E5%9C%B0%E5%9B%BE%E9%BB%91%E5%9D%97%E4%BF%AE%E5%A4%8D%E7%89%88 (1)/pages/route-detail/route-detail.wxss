@@ -1,0 +1,1 @@
+.day-card{margin-bottom:22rpx}.day-title{font-size:34rpx;font-weight:700;margin:10rpx 0}.small{font-size:27rpx;margin-top:18rpx}.node{font-size:25rpx;line-height:1.8;margin:6rpx 0}.meal{background:#f7f1e3;padding:16rpx;border-radius:10rpx;margin-top:14rpx;font-size:24rpx}.desc{font-size:25rpx;line-height:1.7;margin-top:12rpx}

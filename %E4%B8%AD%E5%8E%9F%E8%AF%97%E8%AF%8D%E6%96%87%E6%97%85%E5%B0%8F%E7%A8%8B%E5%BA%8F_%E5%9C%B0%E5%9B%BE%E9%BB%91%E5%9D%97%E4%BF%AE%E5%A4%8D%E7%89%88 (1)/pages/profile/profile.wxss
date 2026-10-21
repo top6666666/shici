@@ -1,0 +1,18 @@
+.profile{display:flex;gap:24rpx;align-items:center;padding:40rpx}
+.avatar-wrap{position:relative;width:120rpx;height:120rpx;flex-shrink:0}
+.avatar-img{width:120rpx;height:120rpx;border-radius:50%;display:block}
+.avatar{width:120rpx;height:120rpx;background:#8C2F39;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:48rpx}
+.avatar-tap{position:absolute;top:0;left:0;width:120rpx;height:120rpx;opacity:0;padding:0;margin:0;background:transparent;border:none;line-height:1;min-height:0}
+.avatar-tap::after{border:none}
+.p-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.title{font-size:34rpx;font-weight:700;color:#3A2E28}
+.subtitle{font-size:24rpx;color:#8A817A;margin-top:10rpx;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.name{font-size:34rpx;font-weight:700;color:#3A2E28;line-height:1.4}
+.pen{font-size:22rpx;color:#A65B4E;margin-left:12rpx}
+.name-input{font-size:34rpx;font-weight:700;color:#3A2E28;height:1.4em;line-height:1.4;padding:0;border:none;border-bottom:2rpx solid #C8A97E;display:block;width:100%}
+.edit-tip{text-align:center;font-size:22rpx;color:#A79E94;padding:4rpx 0 20rpx}
+.stats{display:flex;justify-content:space-around;text-align:center}
+.stats b{display:block;font-size:38rpx;color:#8C2F39}
+.stats text{font-size:22rpx;color:#888}
+.menu view{padding:26rpx 0;border-bottom:1px solid #EEE4D8}
+.menu text{float:right;color:#999}

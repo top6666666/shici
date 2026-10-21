@@ -1,0 +1,20 @@
+<view class="container">
+  <view class="card"><view class="title">诗旅路线</view><view class="subtitle">从“读诗”走向“行走”，线上线下联动</view></view>
+  <view class="card route" wx:for="{{routes}}" wx:key="id" bindtap="open" data-id="{{item.id}}">
+    <view class="r-main">
+      <view class="tag">{{item.type}}</view>
+      <view class="route-name">{{item.name}}</view>
+      <view class="subtitle">{{item.points}}</view>
+      <view class="desc">{{item.desc}}</view>
+      <view class="pts-head">关联文化点位 · {{item.stampedCount}}/{{item.total}}</view>
+      <view class="pts">
+        <view class="pt {{p.stamped ? '' : 'tappable'}}" wx:for="{{item.pointsList}}" wx:for-item="p" wx:key="id" catchtap="tapPoint" data-id="{{p.id}}">
+          <text class="dot {{p.stamped ? 'on' : ''}}">{{p.stamped ? '●' : '○'}}</text>
+          <text class="pt-name {{p.stamped ? 'stamped' : ''}}">{{p.name}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="arrow">›</view>
+  </view>
+  <view class="card"><view class="go" bindtap="goStamp">🏮 去文化点位打卡，点亮路线 ›</view></view>
+</view>

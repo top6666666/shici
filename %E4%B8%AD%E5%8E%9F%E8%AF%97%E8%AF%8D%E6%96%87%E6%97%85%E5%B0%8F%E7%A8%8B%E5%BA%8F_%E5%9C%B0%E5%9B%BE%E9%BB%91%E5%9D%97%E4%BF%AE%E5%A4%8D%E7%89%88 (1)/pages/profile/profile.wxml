@@ -1,0 +1,23 @@
+<view class="container">
+  <view class="card profile">
+    <view class="avatar-wrap">
+      <image wx:if="{{avatar}}" class="avatar-img" src="{{avatar}}" mode="aspectFill"></image>
+      <view wx:else class="avatar">诗</view>
+      <button class="avatar-tap" open-type="chooseAvatar" bind:chooseavatar="onChooseAvatar"></button>
+    </view>
+    <view class="p-info">
+      <view wx:if="{{!editing}}" class="name" bindtap="editName">{{name}}<text class="pen">✎</text></view>
+      <input wx:else class="name-input" type="text" value="{{name}}" focus="{{editing}}" bindblur="onNameBlur" />
+      <view class="subtitle">记录每一次与中原文脉相遇</view>
+    </view>
+  </view>
+  <view class="edit-tip">点头像换图 · 点昵称可修改</view>
+
+  <view class="stats card">
+    <view><b>{{stampedCount}}</b><text>已打卡点位</text></view>
+    <view><b>{{unlockedRoutes}}</b><text>解锁路线</text></view>
+    <view><b>{{quizCorrect}}</b><text>答对诗词</text></view>
+  </view>
+
+  <view class="card menu"><view bindtap="go" data-url="/pages/audio/audio">🎧 我的音频收藏 <text>›</text></view><view bindtap="go" data-url="/pages/study/study">📚 我的研学任务 <text>›</text></view><view bindtap="go" data-url="/pages/creative/creative">🎁 文创与积分 <text>›</text></view></view>
+</view>
