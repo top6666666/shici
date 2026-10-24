@@ -1,0 +1,14 @@
+<view class="container">
+  <view class="card"><view class="title">诗词研学</view><view class="subtitle">课前预习 · 现场任务 · 课后实践</view></view>
+  <view class="card"><view class="section-title">三阶贯通</view>
+    <view class="stage"><b>小学</b><text>诗中有画 · 情感熏陶</text></view>
+    <view class="stage"><b>中学</b><text>诗中有史 · 价值引领</text></view>
+    <view class="stage"><b>大学</b><text>知中有行 · 知行合一</text></view>
+  </view>
+  <view class="card"><view class="section-title">今日研学任务</view>
+    <view class="task">□ 找到一个与诗词相关的河南文化点位</view>
+    <view class="task">□ 诵读一首与点位相关的诗词</view>
+    <view class="task">□ 写下你对“文化传承”的一句理解</view>
+    <view class="btn" bindtap="submit">提交任务</view>
+  </view>
+</view>

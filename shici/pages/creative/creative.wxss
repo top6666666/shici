@@ -1,0 +1,1 @@
+ .product{display:flex;gap:24rpx;align-items:center}.cover{width:150rpx;height:150rpx;background:#F0DFCA;border-radius:22rpx;display:flex;align-items:center;justify-content:center;font-size:62rpx}.pinfo{flex:1}.name{font-size:29rpx;font-weight:700;margin-bottom:10rpx}

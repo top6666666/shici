@@ -1,0 +1,25 @@
+<view class="container">
+  <view class="header card">
+    <view class="avatar">{{poet.avatar}}</view>
+    <view>
+      <view class="title">{{poet.name}} · AI诗人</view>
+      <view class="subtitle">{{poet.subtitle}}</view>
+    </view>
+  </view>
+
+  <scroll-view class="chat" scroll-y scroll-into-view="{{toView}}" scroll-with-animation>
+    <view class="msg {{item.role === 'user' ? 'user' : 'poet'}}" wx:for="{{messages}}" wx:key="index" id="msg-{{index}}">
+      <view class="bubble">{{item.text}}</view>
+    </view>
+    <view class="msg poet" wx:if="{{thinking}}"><view class="bubble thinking">……{{poet.name}}正在思量</view></view>
+  </scroll-view>
+
+  <view class="quick">
+    <view class="quick-item" wx:for="{{quick}}" wx:key="*this" bindtap="quickTap" data-q="{{item}}">{{item}}</view>
+  </view>
+
+  <view class="inputbar">
+    <input class="input" value="{{input}}" bindinput="onInput" bindconfirm="send" confirm-type="send" placeholder="输入想对{{poet.name}}说的话…" />
+    <view class="send" bindtap="send">发送</view>
+  </view>
+</view>

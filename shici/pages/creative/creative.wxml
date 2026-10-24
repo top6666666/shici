@@ -1,0 +1,6 @@
+<view class="container">
+  <view class="card"><view class="title">文创中心</view><view class="subtitle">诗词文化 · 日常生活 · 数字表达</view></view>
+  <view class="product card" wx:for="{{products}}" wx:key="name">
+    <view class="cover">{{item.icon}}</view><view class="pinfo"><view class="name">{{item.name}}</view><view class="subtitle">{{item.desc}}</view><view class="btn-light" bindtap="view">查看详情</view></view>
+  </view>
+</view>
