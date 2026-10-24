@@ -1,252 +1,161 @@
-# -*- coding: utf-8 -*-
-"""
-中原诗旅智导 · 成员 B 后端服务（首版：基础文字问答）
-=====================================================
-技术栈：FastAPI + Uvicorn + python-dotenv + openai SDK
-模型：  阿里云百炼（DashScope）通义千问，OpenAI 兼容模式
-接口：  POST /api/poetry/ask
-
-安全约定：
-- API Key 只从环境变量或本地 backend/.env 读取，绝不写入前端、公开仓库或日志；
-- 日志中不打印密钥，不记录用户完整提问内容（只记录长度与会话标识）；
-- 未接入真实知识库前，data.sources 恒为空数组，不伪造检索来源。
-"""
-
+"""中原诗旅智导：异步、有限等待的诗词问答接口。"""
+import asyncio
 import logging
+import math
 import os
-import sys
+import time
 import uuid
 from contextlib import asynccontextmanager
+from pathlib import Path
 
+import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from openai import (
-    APIConnectionError,
-    APITimeoutError,
-    AuthenticationError,
-    BadRequestError,
-    InternalServerError,
-    OpenAI,
-    PermissionDeniedError,
-    RateLimitError,
-)
+from openai import AsyncOpenAI, APIConnectionError, APITimeoutError, APIStatusError
 from pydantic import BaseModel, Field
 
-# ---------------------------------------------------------------------------
-# 配置：仅从环境变量 / 本地 .env 读取
-# ---------------------------------------------------------------------------
-load_dotenv()  # 读取 backend/.env，不覆盖已存在的系统环境变量
+load_dotenv(Path(__file__).with_name('.env'), override=False)
+VERSION = '0.2.0-async-timeout-fix'
+API_KEY = os.getenv('DASHSCOPE_API_KEY', '').strip()
+BASE_URL = os.getenv('DASHSCOPE_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1').strip()
+MODEL = os.getenv('DASHSCOPE_MODEL', 'qwen3.5-plus-2026-02-15').strip()
 
-DASHSCOPE_API_KEY = os.getenv("DASHSCOPE_API_KEY", "").strip()
-DASHSCOPE_BASE_URL = os.getenv(
-    "DASHSCOPE_BASE_URL",
-    "https://dashscope.aliyuncs.com/compatible-mode/v1",
-).strip()
-# 模型代码以百炼控制台"模型广场"实际可调用为准，通过 .env 的 DASHSCOPE_MODEL 配置
-DASHSCOPE_MODEL = os.getenv("DASHSCOPE_MODEL", "qwen3.5-plus-2026-02-15").strip()
-REQUEST_TIMEOUT = float(os.getenv("REQUEST_TIMEOUT", "30"))
-MAX_TOKENS = int(os.getenv("MAX_TOKENS", "800"))
-MAX_QUESTION_LEN = int(os.getenv("MAX_QUESTION_LEN", "2000"))
-HOST = os.getenv("HOST", "127.0.0.1")
-PORT = int(os.getenv("PORT", "8000"))
-
-# Windows 控制台输出中文日志时避免 GBK 编码报错
-if hasattr(sys.stdout, "reconfigure"):
+def bounded_number(name, default, lower, upper):
     try:
-        sys.stdout.reconfigure(errors="replace")
-        sys.stderr.reconfigure(errors="replace")
-    except Exception:  # noqa: BLE001
-        pass
+        value = float(os.getenv(name, str(default)))
+        if not math.isfinite(value):
+            raise ValueError(name)
+        return max(lower, min(value, upper))
+    except ValueError:
+        return default
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s [%(name)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)],
-)
-logger = logging.getLogger("poetry_backend")
-
-# ---------------------------------------------------------------------------
-# 系统提示词：面向游客与学生，优先中原诗词文化，不编造
-# ---------------------------------------------------------------------------
+# 总deadline至多40秒，给前端60秒超时留出网络余量。
+REQUEST_TIMEOUT = bounded_number('REQUEST_TIMEOUT', 30, 1, 40)
+MAX_TOKENS = int(bounded_number('MAX_TOKENS', 500, 16, 1000))
+MAX_QUESTION_LEN = 2000
+DISABLE_THINKING = os.getenv('DISABLE_THINKING', 'true').lower() not in ('0', 'false', 'no')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
+logger = logging.getLogger('poetry_backend')
 SYSTEM_PROMPT = (
-    "你是“中原诗旅智导”小程序的 AI 诗词文化问答助手，服务对象是来河南（中原）"
-    "旅游的游客和学习古诗词的学生。请遵循以下规则：\n"
-    "1. 使用简体中文，口吻清晰、友好、有条理，优先围绕诗词、诗人、景点与中原文化的关系作答。\n"
-    "2. 遇到与诗词文化无关、或你自己也不确定的问题时，明确说明不确定，绝不编造作者、出处或历史事实。\n"
-    "3. 涉及诗词原文时尽量引用原句并给出白话解释；涉及景点、研学时给出简洁实用的介绍或建议。\n"
-    "4. 回答控制在 300 字以内，重点突出，方便手机端阅读。"
+    '你是中原诗旅智导的诗词文化助手，面向游客和学生。使用简体中文，回答简洁准确，'
+    '一般不超过300字。优先回答诗词、诗人、河南文化问题。'
+    '不确定作者、出处、创作时间或地点时明确说明，不得编造。'
+    '区分文学想象与历史事实、城市关联与具体景点关联。'
+    '尚未接入审核后的知识库与路线库，不要声称已检索项目资料。'
+    '旅行建议须说明是建议，不能保证实时开放、票价或交通，不编造来源。'
 )
-
-# ---------------------------------------------------------------------------
-# 请求 / 响应模型（接口约定：code / message / data.answer / data.sources / data.conversation_id）
-# ---------------------------------------------------------------------------
-class PoetryAskRequest(BaseModel):
-    question: str = Field(..., description="用户问题（必填，去除空格后不能为空）")
-    conversation_id: str = Field("", description="会话标识；为空时由服务端生成")
-
-
-class PoetryAskResponse(BaseModel):
-    code: int = Field(..., description="0 表示成功")
-    message: str = Field(..., description="状态说明")
-    data: dict = Field(..., description="answer / sources / conversation_id")
-
-
-client: OpenAI | None = None
-
+client = None
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    """启动检查：密钥缺失时给出明确提示，不打印密钥本身。"""
+async def lifespan(app):
     global client
-    if not DASHSCOPE_API_KEY:
-        logger.warning(
-            "未检测到 DASHSCOPE_API_KEY：请在 backend/.env 中填写真实密钥后重启服务；"
-            "在此之前 /api/poetry/ask 将返回“密钥缺失”错误。"
+    if API_KEY:
+        client = AsyncOpenAI(
+            api_key=API_KEY, base_url=BASE_URL, max_retries=0,
+            timeout=httpx.Timeout(REQUEST_TIMEOUT, connect=min(10, REQUEST_TIMEOUT)),
         )
     else:
-        client = OpenAI(
-            api_key=DASHSCOPE_API_KEY,
-            base_url=DASHSCOPE_BASE_URL,
-            timeout=REQUEST_TIMEOUT,
-            max_retries=1,  # 控制重试次数，避免免费额度被无谓消耗
-        )
-        logger.info(
-            "百炼客户端已初始化：模型=%s 超时=%.0fs max_tokens=%d",
-            DASHSCOPE_MODEL,
-            REQUEST_TIMEOUT,
-            MAX_TOKENS,
-        )
-    yield
+        logger.warning('模型密钥未配置；问答将返回503')
+    logger.info('version=%s timeout=%ss retries=0 thinking_disabled=%s', VERSION, REQUEST_TIMEOUT, DISABLE_THINKING)
+    try:
+        yield
+    finally:
+        if client is not None:
+            await client.close()
+            client = None
 
+app = FastAPI(title='中原诗旅智导 · 后端服务', version=VERSION, lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=['*'], allow_methods=['*'], allow_headers=['*'])
 
-app = FastAPI(
-    title="中原诗旅智导 · 后端服务",
-    description="AI 诗词文化问答接口（成员 B）",
-    version="0.1.0",
-    lifespan=lifespan,
-)
+class PoetryAskRequest(BaseModel):
+    question: str
+    conversation_id: str = ''
 
-# 浏览器调试跨域（微信小程序 wx.request 不依赖 CORS，此处仅为方便本地网页调试）
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+class AskData(BaseModel):
+    answer: str
+    sources: list = Field(default_factory=list)
+    conversation_id: str
 
+class PoetryAskResponse(BaseModel):
+    code: int
+    message: str
+    data: AskData | None = None
 
-def err(code: int, message: str, http_status: int) -> JSONResponse:
-    """统一错误 JSON：{code, message, data:null}"""
-    return JSONResponse(
-        status_code=http_status,
-        content={"code": code, "message": message, "data": None},
-    )
-
+def error(code, message, status, request_id=None):
+    return JSONResponse(status_code=status, content={
+        'code': code, 'message': message, 'data': None,
+    }, headers={'X-Request-ID': request_id} if request_id else {})
 
 @app.exception_handler(RequestValidationError)
-async def validation_handler(request: Request, exc: RequestValidationError):
-    """把 FastAPI 默认 422 转为统一 JSON 的 400（含缺失字段与无效 JSON）。"""
-    err_types = {e.get("type") for e in exc.errors()}
-    if "json_invalid" in err_types:
-        return err(40004, "请求体不是有效的 JSON，请检查 Content-Type 与格式", 400)
-    return err(40001, "请求参数无效：question 必须为字符串且不能为空", 400)
+async def validation_error(request: Request, exc: RequestValidationError):
+    return error(40001, '参数格式无效：question须为字符串，conversation_id须为字符串', 400)
 
-
-@app.get("/")
+@app.get('/')
 async def root():
-    return {
-        "service": "中原诗旅智导后端",
-        "status": "ok",
-        "model": DASHSCOPE_MODEL,
-        "key_configured": bool(DASHSCOPE_API_KEY),
-    }
+    # 健康检查不调用模型，也不表示额度、权限和上游网络已经正常。
+    return {'service': '中原诗旅智导后端', 'status': 'ok', 'version': VERSION,
+            'model': MODEL, 'key_configured': bool(API_KEY),
+            'request_timeout_seconds': REQUEST_TIMEOUT, 'knowledge_base_enabled': False,
+            'conversation_memory_enabled': False}
 
+@app.head('/')
+async def head_root():
+    return JSONResponse(content=None)
 
-@app.post("/api/poetry/ask", response_model=PoetryAskResponse)
-async def poetry_ask(payload: PoetryAskRequest):
-    """核心接口：接收问题 -> 调用百炼模型 -> 统一 JSON 响应。"""
+@app.post('/api/poetry/ask', response_model=PoetryAskResponse)
+async def ask_poetry(payload: PoetryAskRequest):
     question = payload.question.strip()
     if not question:
-        return err(40001, "question 不能为空", 400)
+        return error(40001, 'question 不能为空', 400)
     if len(question) > MAX_QUESTION_LEN:
-        return err(40002, f"question 过长（上限 {MAX_QUESTION_LEN} 字）", 400)
-
-    conv_id = (payload.conversation_id or "").strip()
-    if len(conv_id) > 128:
-        return err(40003, "conversation_id 过长（上限 128 字符）", 400)
-    if not conv_id:
-        conv_id = uuid.uuid4().hex  # 服务端生成会话标识
-
+        return error(40002, 'question过长（上限2000字）', 400)
+    conv = payload.conversation_id.strip()
+    if len(conv) > 128:
+        return error(40003, 'conversation_id过长（上限128字符）', 400)
+    conv = conv or uuid.uuid4().hex
+    request_id = uuid.uuid4().hex
     if client is None:
-        logger.error("密钥缺失，拒绝处理请求 conv=%s", conv_id)
-        return err(
-            50001,
-            "服务未配置模型密钥，请管理员在 backend/.env 中填写 DASHSCOPE_API_KEY 后重启",
-            503,
-        )
-
+        return error(50001, '服务尚未配置模型密钥，请联系管理员', 503, request_id)
+    kwargs = dict(model=MODEL, messages=[{'role': 'system', 'content': SYSTEM_PROMPT},
+                  {'role': 'user', 'content': question}], max_tokens=MAX_TOKENS, temperature=0.4)
+    if DISABLE_THINKING:
+        kwargs['extra_body'] = {'enable_thinking': False}
+    started = time.monotonic()
+    logger.info('ask_start request_id=%s q_len=%d', request_id, len(question))
     try:
-        resp = client.chat.completions.create(
-            model=DASHSCOPE_MODEL,
-            messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": question},
-            ],
-            max_tokens=MAX_TOKENS,
-            temperature=0.4,
-        )
-    except AuthenticationError:
-        logger.error("模型服务鉴权失败（API Key 无效）conv=%s", conv_id)
-        return err(50002, "模型服务鉴权失败，请检查 DASHSCOPE_API_KEY 是否正确", 502)
-    except RateLimitError:
-        logger.error("模型服务限流或免费额度已用完 conv=%s", conv_id)
-        return err(50003, "模型服务限流或免费额度已用完，请稍后再试", 503)
-    except APITimeoutError:
-        logger.error("模型调用超时（%.0fs）conv=%s", REQUEST_TIMEOUT, conv_id)
-        return err(50004, "模型服务响应超时，请稍后再试", 504)
+        # 真正await异步HTTP，不在事件循环中执行同步网络调用。
+        # wait_for限制整次调用时长，而不只是单次网络读操作。
+        result = await asyncio.wait_for(client.chat.completions.create(**kwargs), timeout=REQUEST_TIMEOUT)
+        if not result.choices or not result.choices[0].message.content:
+            return error(50010, '模型未返回有效回答，请重试', 502, request_id)
+        answer = result.choices[0].message.content.strip()
+        if not answer:
+            return error(50010, '模型未返回有效回答，请重试', 502, request_id)
+        logger.info('ask_ok request_id=%s elapsed=%.2f answer_len=%d', request_id, time.monotonic()-started, len(answer))
+        return {'code': 0, 'message': 'success', 'data': {'answer': answer, 'sources': [], 'conversation_id': conv}}
+    except (asyncio.TimeoutError, APITimeoutError):
+        logger.warning('ask_timeout request_id=%s elapsed=%.2f', request_id, time.monotonic()-started)
+        return error(50004, '模型响应超时，请稍后重试', 504, request_id)
     except APIConnectionError:
-        logger.error("无法连接模型服务 conv=%s", conv_id)
-        return err(50005, "无法连接模型服务，请检查网络后重试", 502)
-    except BadRequestError as e:
-        logger.error("模型请求被拒绝 conv=%s err=%s", conv_id, str(e)[:150])
-        return err(
-            50006,
-            "模型请求被拒绝：请检查 DASHSCOPE_MODEL 是否为控制台可调用的模型代码",
-            400,
-        )
-    except PermissionDeniedError:
-        logger.error("账号无权限调用该模型 conv=%s", conv_id)
-        return err(50008, "当前账号无权限调用该模型，请联系管理员", 403)
-    except InternalServerError:
-        logger.error("模型服务内部错误 conv=%s", conv_id)
-        return err(50007, "模型服务内部错误，请稍后再试", 502)
-    except Exception as e:  # noqa: BLE001
-        logger.error("未知上游错误 conv=%s err=%s", conv_id, str(e)[:200])
-        return err(50009, "模型服务异常，请稍后再试", 502)
+        logger.warning('upstream_connection_error request_id=%s', request_id)
+        return error(50005, '无法连接模型服务，请管理员检查地域地址和网络', 502, request_id)
+    except APIStatusError as exc:
+        # 不打印异常正文、Authorization请求头、密钥或用户完整问题。
+        status = exc.status_code
+        logger.warning('upstream_error request_id=%s upstream_status=%s', request_id, status)
+        mapping = {401: (50002, '模型鉴权失败，请管理员检查密钥', 502),
+                   403: (50008, '模型权限不足，请管理员检查权限和地域', 502),
+                   429: (50003, '模型限流或额度异常，请管理员检查控制台', 503),
+                   400: (50006, '模型参数被拒绝，请管理员检查模型代码与参数', 502)}
+        code, message, http_status = mapping.get(status, (50007, '模型服务异常，请稍后重试', 502))
+        return error(code, message, http_status, request_id)
+    except Exception as exc:
+        logger.error('unexpected_error request_id=%s type=%s', request_id, type(exc).__name__)
+        return error(50009, '模型服务异常，请稍后重试', 502, request_id)
 
-    if not resp.choices:
-        return err(50010, "模型返回为空，请重试", 502)
-    answer = (resp.choices[0].message.content or "").strip()
-    if not answer:
-        return err(50010, "模型返回为空，请重试", 502)
-
-    # 日志只记录长度与会话标识，不记录用户完整提问，也不记录密钥
-    logger.info("问答成功 conv=%s q_len=%d answer_len=%d", conv_id, len(question), len(answer))
-    return {
-        "code": 0,
-        "message": "success",
-        "data": {
-            "answer": answer,
-            "sources": [],  # 首版未接入知识库，恒为空数组
-            "conversation_id": conv_id,
-        },
-    }
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     import uvicorn
-
-    uvicorn.run("main:app", host=HOST, port=PORT, reload=False)
+    uvicorn.run(app, host=os.getenv('HOST', '127.0.0.1'), port=int(os.getenv('PORT', '8000')))
