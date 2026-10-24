@@ -1,0 +1,21 @@
+# ===== 中原诗旅智导 仓库忽略规则 =====
+
+# 后端密钥与本地配置（绝不入库）
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+backend/.venv/
+*.egg-info/
+.pytest_cache/
+
+# 本地日志
+*.log
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
