@@ -1,166 +1,25 @@
-# 中原诗旅智导 · 后端服务（成员 B）
+# 中原诗旅智导：有来源的资料问答 v0.3.0
 
-FastAPI + 阿里云百炼（通义千问）基础文字问答服务。首版只实现
-`POST /api/poetry/ask`，未接入知识库（RAG）前 `data.sources` 恒为空数组。
+沿用 POST /api/poetry/ask 与现有前端协议。Render 根目录 backend，启动命令 uvicorn main:app --host 0.0.0.0 --port $PORT。
 
----
+## 实现
+- 20 首网页原文与署名复核记录，保留原200首表编号；poems.json 是运行资料库。
+- 标题、诗句、作者、地域关键词检索，最多4首。
+- 模型选择资料中的事实段落ID，服务端校验ID并拼接原段落、绑定来源；不执行模型自拟网址或事实。
+- 查询无匹配时明确资料不足，不调用模型。模型异常或无密钥时返回明确标注的资料摘录。
+- 来源 title/url 兼容既有小程序，citation 对应答案 [1] 等标记。
+- 30分钟最多500个会话，只记最近诗词ID。进程重启或多进程不共享；非长期对话记忆。
 
-## 1. 目录结构
+## 数据质量与限制
+已核对网页原文及署名，不等于纸本权威定本校勘。白话大意为项目自拟。未知背景置于 excluded_background，不进入模型上下文。新增10首仅提供文本层面的地域关联，不强配现代景区。未接入剩余180首、实时旅游信息、路线规划或知识图谱。
 
-```
-shici/
-├── backend/                  # 本后端（与小程序前端分开）
-│   ├── main.py               # FastAPI 应用与接口实现
-│   ├── requirements.txt      # Python 依赖
-│   ├── .env.example          # 环境变量模板（可提交）
-│   ├── .env                  # 本地真实配置（已 gitignore，含 API Key）
-│   ├── test_api.ps1          # Windows PowerShell 接口测试脚本
-│   ├── test_questions.md     # 10+ 条测试问题清单
-│   └── api_docs_for_member_A.md  # 给前端（成员 A）的联调文档
-├── .gitignore                # 仓库忽略规则（backend/.env 等）
-└── 中原诗词文旅小程序_地图黑块修复版 (1)/   # 成员 A 的小程序前端（未改动）
-```
+这是证据选择式问答，答案措辞较固定，不宣称自由生成式RAG或向量检索。资料来源用于支持诗文及解释核查；项目推断、整理与未知事项明确标注。
 
-## 2. 环境与依赖
+## 配置
+沿用现有 DASHSCOPE_API_KEY、DASHSCOPE_BASE_URL、DASHSCOPE_MODEL；不需要新增服务或密钥。密钥仅在服务器环境变量中。API无用户认证，仍适合比赛原型；模型调用配额沿用平台设置。
 
-- Python：`D:\python\python.exe`（3.14.3）
-- 依赖：`fastapi`、`uvicorn[standard]`、`python-dotenv`、`openai`（已安装）
+## 验证
+2026-10-26：46项自动化测试通过，覆盖20标题检索、诗句定位、未知资料拒答、来源伪造拦截、追问隔离、输入校验、无密钥降级和异步超时。测试使用模拟模型，不代表所有真实模型问题质量均通过。
 
-如需在别的机器重装：
-
-```powershell
-pip install -r requirements.txt
-```
-
-## 3. 配置 API Key（重要）
-
-1. 打开 `backend/.env`（用编辑器，不要发到聊天/群里）；
-2. 在 `DASHSCOPE_API_KEY=` 后粘贴百炼控制台创建的密钥；
-3. 确认 `DASHSCOPE_MODEL` 与百炼控制台「模型广场」实际可调用的模型代码一致；
-4. 保存后重启服务。
-
-> `.env` 已加入 `.gitignore`，不会提交到仓库；密钥绝不写入前端或日志。
-
-## 4. 启动 / 停止
-
-启动（在 `backend` 目录下）：
-
-```powershell
-cd C:\Users\和\Desktop\shici\backend
-D:\python\python.exe -m uvicorn main:app --host 127.0.0.1 --port 8000
-```
-
-- 接口文档（Swagger）：http://127.0.0.1:8000/docs
-- 健康检查：http://127.0.0.1:8000/
-- 停止：在运行窗口按 `Ctrl + C`；若在后台运行，用
-  `Get-Process python | Stop-Process`（谨慎，会结束所有 python 进程，建议记住 PID 定向停止）。
-
-开发时热重载可加 `--reload`。
-
-## 5. API 文档
-
-### POST /api/poetry/ask
-
-**请求头**：`Content-Type: application/json`
-
-**请求体**：
-
-```json
-{
-  "question": "《春晓》的作者是谁？这首诗表达了什么？",
-  "conversation_id": ""
-}
-```
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| question | string | 是 | 用户问题，去除空格后不能为空，上限 2000 字 |
-| conversation_id | string | 否 | 会话标识，为空时服务端自动生成（32 位 hex） |
-
-**成功响应**（HTTP 200）：
-
-```json
-{
-  "code": 0,
-  "message": "success",
-  "data": {
-    "answer": "AI 回答内容",
-    "sources": [],
-    "conversation_id": "服务端生成或沿用的会话标识"
-  }
-}
-```
-
-**错误响应**（HTTP 4xx/5xx，统一 JSON）：
-
-```json
-{ "code": 40001, "message": "question 不能为空", "data": null }
-```
-
-### 错误码表
-
-| HTTP | code | 含义 |
-|---|---|---|
-| 400 | 40001 | question 缺失 / 非字符串 / 为空 |
-| 400 | 40002 | question 过长（>2000 字） |
-| 400 | 40003 | conversation_id 过长（>128 字符） |
-| 400 | 40004 | 请求体不是有效 JSON |
-| 400 | 50006 | 模型请求被拒绝（多半是模型代码不可用） |
-| 403 | 50008 | 账号无权限调用该模型 |
-| 502 | 50002 | API Key 无效（鉴权失败） |
-| 502 | 50005 | 无法连接模型服务 |
-| 502 | 50007 | 模型服务内部错误 |
-| 502 | 50009 | 未知上游错误 |
-| 503 | 50001 | 服务未配置密钥（backend/.env 未填） |
-| 503 | 50003 | 限流或免费额度已用完 |
-| 504 | 50004 | 模型调用超时（30s） |
-
-## 6. 本机测试
-
-启动后端后，另开终端：
-
-```powershell
-cd C:\Users\和\Desktop\shici\backend
-powershell -ExecutionPolicy Bypass -File .\test_api.ps1
-```
-
-或手动单条测试：
-
-```powershell
-$body = '{"question":"《春晓》的作者是谁？","conversation_id":""}'
-Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/poetry/ask" -Method Post `
-  -ContentType "application/json; charset=utf-8" -Body $body
-```
-
-### 测试记录（2026-10-24 本机执行）
-
-| 场景 | 预期 | 结果 |
-|---|---|---|
-| 正常诗词问答 | code=0，answer 中文回答 | 待填写（需 .env 密钥后运行） |
-| 空问题 | 4xx | 待填写 |
-| 缺少 question | 4xx | 待填写 |
-| 无效 JSON | 4xx | 待填写 |
-| conversation_id 沿用 | 返回相同值 | 待填写 |
-| 密钥缺失 | 503 + 可读提示 | 待填写 |
-| 10+ 问题质量验证 | 全部 code=0 | 待填写 |
-
-## 7. 已知限制（首版）
-
-- 无长期记忆：每轮请求独立，仅靠 conversation_id 标识会话，不保存历史。
-- 未接入知识库：回答依赖模型通用知识，`sources` 恒为空数组，不伪造来源。
-- 免费额度用完即停：已开启“额度用完即停”，不会产生额外费用；超限返回 503。
-- 仅适合本地/开发调试；微信小程序真机需公网 HTTPS 合法域名（见联调文档）。
-
-## 8. 后续计划（RAG）
-
-1. 接收成员 A 整理的诗词/景点/路线资料（Excel/CSV，统一字段）；
-2. 建立检索库（文本切片 + 向量化，可用百炼向量模型或本地方案）；
-3. 在 `/api/poetry/ask` 内先检索再回答，命中时在 `data.sources` 返回
-   `{"title":"春晓","type":"poem"}` 等真实来源；
-4. 资料来源缺失或未核实时，明确返回不确定，不编造。
-
-## 9. 费用控制
-
-- 不充值、不购买节省计划、不开通付费服务；
-- 单次输出上限 `MAX_TOKENS=800`、请求超时 `30s`、重试 1 次；
-- 免费额度用完即停；公网部署前会先列明费用并等待明确同意。
+## 扩充
+在 poems.json records 中增加记录，保留唯一ID和可核查 sources。事实段落使用 id/kind/text，未知信息不作为确定性事实。上线前运行测试并人工核对。
