@@ -146,7 +146,8 @@ def parse_travel_question(q):
     foreign_city = re.search(r'开封|郑州|安阳|南阳|信阳|许昌|北京|西安|杭州|上海|成都|苏州', q)
     if unsupported or foreign_city or not re.search(r'洛阳|河南|中原|哪个城市',q):
         return {'answer':'目前可生成洛阳一日诗旅，支持唐诗、古都文化、龙门山水三类主题及两种节奏。你提出的城市、时段或其他限制尚不能由这一版可靠满足，因此没有直接生成行程。可进入“洛阳诗旅”选择条件；具体交通、无障碍条件和票务需另行核实。', 'sources':[], 'route':None}
-    theme = 'landscape' if re.search(r'山水|龙门|白居易|香山|白园',q) else 'history' if re.search(r'历史|古都|博物馆|文物',q) else 'tang'
+    interest_q = re.sub(r'洛阳龙门站|龙门站|洛阳站', '', q)
+    theme = 'landscape' if re.search(r'山水|龙门|白居易|香山|白园',interest_q) else 'history' if re.search(r'历史|古都|博物馆|文物',interest_q) else 'tang'
     pace = 'light' if re.search(r'轻松|舒缓|慢|少走|不赶',q) else 'full' if re.search(r'充实|紧凑|多看|丰富',q) else 'light'
     origin = 'longmen_station' if '龙门站' in q else 'luoyang_station' if '洛阳站' in q else 'old_town' if re.search(r'老城出发|从老城',q) else 'hotel'
     travel_date = ''
