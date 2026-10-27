@@ -1,5 +1,6 @@
 """中原诗旅智导：异步、有限等待的诗词问答接口。"""
 import asyncio
+from travel import RouteRequest, generate_route, parse_travel_question
 from knowledge import RECORDS, DATA, retrieve, session, remember, prompt, render
 import logging
 import math
@@ -19,7 +20,7 @@ from openai import AsyncOpenAI, APIConnectionError, APITimeoutError, APIStatusEr
 from pydantic import BaseModel, Field
 
 load_dotenv(Path(__file__).with_name('.env'), override=False)
-VERSION = '0.3.0-sourced-qa'
+VERSION = '0.4.0-luoyang-travel'
 API_KEY = os.getenv('DASHSCOPE_API_KEY', '').strip()
 BASE_URL = os.getenv('DASHSCOPE_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1').strip()
 MODEL = os.getenv('DASHSCOPE_MODEL', 'qwen3.5-plus-2026-02-15').strip()
@@ -80,6 +81,7 @@ class AskData(BaseModel):
     answer: str
     sources: list = Field(default_factory=list)
     conversation_id: str
+    route: dict | None = None
 
 class PoetryAskResponse(BaseModel):
     code: int
@@ -93,7 +95,7 @@ def error(code, message, status, request_id=None):
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(request: Request, exc: RequestValidationError):
-    return error(40001, '参数格式无效：question须为字符串，conversation_id须为字符串', 400)
+    return error(40001, '参数格式无效：请检查问题、日期及路线选项；目前仅支持洛阳一日路线', 400)
 
 @app.get('/')
 async def root():
@@ -101,11 +103,15 @@ async def root():
     return {'service': '中原诗旅智导后端', 'status': 'ok', 'version': VERSION,
             'model': MODEL, 'key_configured': bool(API_KEY),
             'request_timeout_seconds': REQUEST_TIMEOUT, 'knowledge_base_enabled': True, 'knowledge_base_count': len(RECORDS), 'knowledge_base_version': DATA['version'],
-            'conversation_memory_enabled': True, 'memory_scope': 'poem_ids_only_30min_single_process'}
+            'travel_enabled': True, 'travel_city': '洛阳', 'travel_data_version': '2026-10-27.1', 'conversation_memory_enabled': True, 'memory_scope': 'poem_ids_only_30min_single_process'}
 
 @app.head('/')
 async def head_root():
     return JSONResponse(content=None)
+
+@app.post('/api/travel/recommend')
+async def recommend_travel(payload: RouteRequest):
+    return {'code': 0, 'message': 'success', 'data': generate_route(payload)}
 
 @app.post('/api/poetry/ask', response_model=PoetryAskResponse)
 async def ask_poetry(payload: PoetryAskRequest):
@@ -118,12 +124,15 @@ async def ask_poetry(payload: PoetryAskRequest):
     if len(conv) > 128:
         return error(40003, 'conversation_id过长（上限128字符）', 400)
     conv, previous = session(conv)
+    travel_answer = parse_travel_question(question)
+    if travel_answer is not None:
+        return {'code': 0, 'message': 'success', 'data': {**travel_answer, 'conversation_id': conv}}
     records = retrieve(question, previous)
     request_id = uuid.uuid4().hex
     if not records:
         remember(conv, [])
         return {'code': 0, 'message': 'success', 'data': {'answer':
-            '当前已接入的20首资料中，未找到足够依据回答这个问题。请补充诗名、作者或诗句，例如《秋思》中的“开封”是什么意思。尚未核实的创作年份、景区信息和实时出行信息不能据此确认。',
+            f'当前已接入的{len(RECORDS)}首资料中，未找到足够依据回答这个问题。请补充诗名、作者或诗句，例如《秋思》中的“开封”是什么意思。尚未核实的创作年份、景区信息和实时出行信息不能据此确认。',
             'sources': [], 'conversation_id': conv}}
     remember(conv, records)
     def evidence_response(content=None):
