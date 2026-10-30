@@ -1,0 +1,40 @@
+<view class="container">
+  <view class="card">
+    <view class="title">{{route.name}}</view>
+    <view class="subtitle">{{route.type}} · {{route.duration}}</view>
+    <view class="subtitle">{{route.points}}</view>
+    <view class="desc">{{route.desc}}</view>
+  </view>
+
+  <block wx:if="{{route.days}}">
+    <view class="section-title">5天研学行程</view>
+    <view class="card day-card" wx:for="{{route.days}}" wx:key="day">
+      <view class="tag">Day {{item.day}}</view>
+      <view class="day-title">{{item.title}}</view>
+      <view class="subtitle">{{item.theme}}</view>
+      <view class="section-title small">行程节点</view>
+      <view class="node" wx:for="{{item.nodes}}" wx:key="*this">📍 {{item}}</view>
+      <view class="section-title small">研学活动</view>
+      <view class="node" wx:for="{{item.activities}}" wx:key="*this">✓ {{item}}</view>
+      <view wx:if="{{item.meal}}" class="meal">🍜 {{item.meal}}</view>
+    </view>
+    <view class="card">
+      <view class="section-title">配套研学手册</view>
+      <view class="node" wx:for="{{route.handbook}}" wx:key="*this">☑ {{item}}</view>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="section-title">路线节点</view>
+    <view class="card timeline" wx:for="{{route.nodes}}" wx:key="name">
+      <view class="dot"></view><view><view class="name">{{item.name}}</view><view class="subtitle">{{item.content}}</view></view>
+    </view>
+    <view class="card">
+      <view class="section-title">诗旅任务</view>
+      <view class="task">① 现场找到诗词意象</view>
+      <view class="task">② 完成诗词知识问答</view>
+      <view class="task">③ 点亮路线打卡章</view>
+    </view>
+  </block>
+  <view class="btn" bindtap="checkin">完成本路线打卡</view>
+</view>

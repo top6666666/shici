@@ -1,0 +1,53 @@
+<view class="ly-page">
+  <view class="ly-hero">
+    <text class="eyebrow">中原诗旅 / 洛阳试点</text>
+    <view class="hero-title">一日洛阳<text class="hero-sub">一路读诗</text></view>
+    <view class="hero-note">从一首诗出发，让每一站都有依据。</view>
+    <view class="hero-tags"><text>诗词有出处</text><text>关联说得清</text><text>行程可保存</text></view>
+  </view>
+  <view class="ly-card form">
+    <view class="card-title">这一次，怎样读洛阳？</view>
+    <view class="field-label">文化兴趣</view>
+    <view class="choices"><button wx:for="{{themes}}" wx:key="*this" class="choice {{themeIndex===index?'selected':''}}" data-index="{{index}}" bindtap="changeTheme" disabled="{{loading}}">{{item}}</button></view>
+    <view class="field-label">游览节奏</view>
+    <view class="choices"><button wx:for="{{paces}}" wx:key="*this" class="choice {{paceIndex===index?'selected':''}}" data-index="{{index}}" bindtap="changePace" disabled="{{loading}}">{{item}}</button></view>
+    <view class="field-row"><text>出发地点</text><picker range="{{origins}}" value="{{originIndex}}" bindchange="changeOrigin" disabled="{{loading}}"><view class="picker-value">{{origins[originIndex]}} ›</view></picker></view>
+    <view class="field-row"><text>出游日期</text><picker mode="date" value="{{travelDate}}" bindchange="changeDate" disabled="{{loading}}"><view class="picker-value">{{travelDate || '暂不确定'}} ›</view></picker></view>
+    <view wx:if="{{travelDate}}" class="clear-date" bindtap="clearDate">清除日期</view>
+    <view class="form-note">目前支持洛阳一日游。龙门山水有台阶，舒缓节奏也需要步行；日期用于提醒周一闭馆，不代表已预约。</view>
+    <button class="primary" bindtap="generate" loading="{{loading}}" disabled="{{loading}}">{{loading?'正在安排路线…':'生成我的诗旅路线'}}</button>
+    <view wx:if="{{slow}}" class="status">服务首次唤醒可能较慢，请稍候。</view>
+    <button wx:if="{{hasSaved}}" class="text-button" bindtap="loadSaved" disabled="{{loading}}">查看本机保存的路线</button>
+  </view>
+  <view wx:if="{{error}}" class="ly-card error"><view>{{error}}</view><button class="secondary" bindtap="generate">重新尝试</button></view>
+  <view wx:if="{{!route && !loading && !error}}" class="empty-note">选择主题后生成路线，即可查看每站诗词、游览建议和资料来源。</view>
+  <view wx:if="{{route}}" id="result">
+    <view class="ly-card result-head">
+      <view class="result-origin">{{resultOrigin}}</view>
+      <view class="card-title">{{route.name}}</view>
+      <view class="route-tags">{{route.theme_label}} · {{route.pace_label}} · {{route.stops.length}}站</view>
+      <view class="route-summary">{{route.summary}}</view>
+      <view class="total">{{route.total_label}}</view>
+      <view class="small">不含首程与返程；转场时间为规划预算。</view>
+      <view class="reason">{{route.reason}}</view>
+      <view class="arrival">{{route.arrival}}</view>
+      <view class="actions"><button class="secondary" bindtap="copyItinerary">复制行程</button><button class="secondary" bindtap="saveRoute">{{saved?'已保存本机':'保存到本机'}}</button></view>
+    </view>
+    <view class="section-caption">沿着诗句，逐站出发</view>
+    <view class="stop-wrap" wx:for="{{route.stops}}" wx:key="id" wx:for-item="stop">
+      <view class="ly-card stop-card">
+        <view class="stop-head"><view class="number">{{stop.order}}</view><view class="stop-heading"><view class="stop-name">{{stop.name}}</view><view class="small">建议停留 {{stop.duration_label}}</view></view></view>
+        <view class="poem-box"><view class="poem-title">《{{stop.poem.title}}》<text> {{stop.poem.author}}</text></view><text class="poem-text" selectable="{{true}}">{{stop.poem.text}}</text><view class="poem-toggle" data-id="{{stop.id}}" bindtap="togglePoem">{{expanded[stop.id]?'收起白话解释':'展开白话解释'}} ›</view><view wx:if="{{expanded[stop.id]}}" class="meaning">{{stop.poem.meaning}}</view></view>
+        <view class="relation-tag">{{stop.relation_type}}</view><view class="body-text">{{stop.relation}}</view>
+        <view class="study-task"><text class="bold">小小研学任务</text><view>{{stop.activity}}</view></view>
+        <view class="visit-note">参观提醒：{{stop.visit_note}}</view>
+        <button class="place-button" bindtap="viewPlace" data-id="{{stop.id}}">查看地点 · 复制地址</button>
+        <view class="sources"><view class="source-label">本站依据 · 点击复制链接核查</view><view wx:for="{{stop.sources}}" wx:for-item="source" wx:key="id" class="source-link" bindtap="copySource" data-url="{{source.url}}">{{source.title}} ↗<view class="source-scope">{{source.scope}}</view></view></view>
+      </view>
+      <view wx:if="{{stop.next_transfer}}" class="transfer"><view>↓ {{stop.next_transfer.label}}</view><view class="small">{{stop.next_transfer.note}}</view></view>
+    </view>
+    <view class="ly-card"><view class="card-title">出发前，再看一眼</view><view class="notice">{{route.rest_note}}</view><view wx:for="{{route.notices}}" wx:key="*this" class="notice">· {{item}}</view><view class="source-label">补充出行来源</view><view wx:for="{{route.sources}}" wx:key="id" class="source-link" bindtap="copySource" data-url="{{item.url}}">{{item.title}} ↗</view></view>
+    <view class="bottom-actions"><button class="primary" bindtap="copyItinerary">复制完整诗旅行程</button><button class="secondary" open-type="share">分享给同行伙伴</button><button class="text-button" bindtap="askMore">继续向 AI 问诗助手提问 ›</button></view>
+    <view class="footer-note">基于核查资料进行规则编排 · 释义与研学任务为项目整理<view>资料版本 {{route.data_version}}</view></view>
+  </view>
+</view>

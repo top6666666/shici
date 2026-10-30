@@ -1,0 +1,61 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/map/map",
+    "pages/audio/audio",
+    "pages/routes/routes",
+    "pages/interactive/interactive",
+    "pages/study/study",
+    "pages/creative/creative",
+    "pages/profile/profile",
+    "pages/poem/poem",
+    "pages/ai-ask/ai-ask",
+    "pages/route-detail/route-detail",
+    "pages/poem-detail/poem-detail",
+    "pages/poet-chat/poet-chat",
+    "pages/poet-libai/poet-libai",
+    "pages/poet-yishan/poet-yishan",
+    "pages/stamp/stamp",
+    "pages/quiz/quiz",
+    "pages/route-explore/route-explore",
+    "pages/passport/passport",
+    "pages/luoyang/luoyang"
+  ],
+  "window": {
+    "navigationBarTitleText": "中原诗词 · 行走河南",
+    "navigationBarBackgroundColor": "#F7F1E3",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F7F1E3",
+    "backgroundTextStyle": "light"
+  },
+  "tabBar": {
+    "color": "#777777",
+    "selectedColor": "#8C2F39",
+    "backgroundColor": "#FFFDF8",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/map/map",
+        "text": "诗词地图"
+      },
+      {
+        "pagePath": "pages/routes/routes",
+        "text": "诗旅路线"
+      },
+      {
+        "pagePath": "pages/interactive/interactive",
+        "text": "互动"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

@@ -1,0 +1,1 @@
+Page({submit(){wx.showToast({title:"任务已提交",icon:"success"})}})

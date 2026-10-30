@@ -1,0 +1,34 @@
+<view class="container">
+  <view class="header card">
+    <view class="avatar">🤖</view>
+    <view>
+      <view class="title">AI 问诗助手</view>
+      <view class="subtitle">诗句 · 诗人 · 典故 · 河南诗旅</view>
+    </view>
+  </view>
+
+  <view class="session-bar"><text>AI 辅助查资料 · 参考来源可复制核查</text><button size="mini" bindtap="newConversation" disabled="{{loading}}">新对话</button></view>
+  <scroll-view class="chat" scroll-y scroll-into-view="{{toView}}" scroll-with-animation>
+    <view class="msg {{item.role}}" wx:for="{{messages}}" wx:key="index" id="msg-{{index}}">
+      <view class="message-content">
+        <view wx:if="{{item.role==='error'}}" class="bubble err-bubble" bindtap="retry" data-index="{{index}}">{{item.text}}</view>
+        <view wx:else class="bubble"><text selectable="{{true}}">{{item.text}}</text></view>
+        <view class="sources" wx:if="{{item.sources.length}}"><view>参考资料（点击复制链接）</view><view class="source" wx:for="{{item.sources}}" wx:for-item="source" wx:key="index" bindtap="copySource" data-url="{{source.url}}">{{source.title}}{{source.url ? '（点击复制链接）' : ''}}</view></view>
+        <button wx:if="{{item.route}}" class="travel-action" bindtap="openTravel" data-index="{{index}}">查看完整诗旅路线 ›</button>
+        <view class="retry-note" wx:if="{{item.role==='error' && index !== messages.length - 1}}">较早的失败问题，请重新发送</view>
+      </view>
+    </view>
+    <view class="msg ai" wx:if="{{loading}}" id="thinking">
+      <view class="bubble thinking">{{slow ? '仍在等待回答，服务首次唤醒可能较慢，请稍候…' : '正在检索诗词资料…'}}</view>
+    </view>
+  </scroll-view>
+
+  <view class="quick">
+    <view class="quick-item" wx:for="{{quick}}" wx:key="*this" bindtap="quickTap" data-q="{{item}}">{{item}}</view>
+  </view>
+
+  <view class="inputbar">
+    <input class="input" value="{{input}}" bindinput="onInput" bindconfirm="send" confirm-type="send" maxlength="2000" placeholder="输入你的诗词问题..." />
+    <button class="send" bindtap="send" disabled="{{loading}}">{{loading ? '等待中' : '发送'}}</button>
+  </view>
+</view>

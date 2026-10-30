@@ -1,0 +1,42 @@
+{
+  "description": "中原诗词文化数字化文旅小程序",
+  "packOptions": {
+    "ignore": [
+      {
+        "value": "README.md",
+        "type": "file"
+      }
+    ],
+    "include": []
+  },
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "compileWorklet": false,
+    "uglifyFileName": false,
+    "uploadWithSourceMap": true,
+    "packNpmManually": false,
+    "packNpmRelationList": [],
+    "minifyWXSS": true,
+    "minifyWXML": true,
+    "localPlugins": false,
+    "disableUseStrict": false,
+    "useCompilerPlugins": false,
+    "condition": false,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "miniprogram",
+  "appid": "wx36c18f85e58595d2",
+  "projectname": "中原诗旅-洛阳交付版",
+  "simulatorType": "wechat",
+  "condition": {},
+  "simulatorPluginLibVersion": {},
+  "editorSetting": {}
+}

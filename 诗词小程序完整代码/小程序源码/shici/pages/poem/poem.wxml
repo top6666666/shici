@@ -1,0 +1,17 @@
+<view class="container">
+  <view class="card">
+    <view class="title">河南诗词 50 首</view>
+    <view class="subtitle">诗名、作者、朝代、类型、诗文与关联地点</view>
+    <input class="search" placeholder="搜索诗名 / 作者 / 地点" value="{{keyword}}" bindinput="onSearch"/>
+  </view>
+  <view class="card poem-item" wx:for="{{poems}}" wx:key="no" data-index="{{index}}" bindtap="open">
+    <view class="num">{{item.no}}</view>
+    <view class="main">
+      <view class="poem-title">{{item.title}}</view>
+      <view class="subtitle">{{item.author}} · {{item.dynasty}} · {{item.type}}</view>
+      <view class="location">📍 {{item.location}}</view>
+      <view class="excerpt">{{item.text}}</view>
+    </view>
+    <view class="arrow">›</view>
+  </view>
+</view>

@@ -1,0 +1,36 @@
+const assert=require('assert');
+const fs=require('fs');
+const vm=require('vm');
+const path=require('path');
+const api=require('../shici/utils/travel');
+const qa=require('../shici/utils/aiAsk');
+const route=JSON.parse(fs.readFileSync(path.join(__dirname,'route_fixture.json'),'utf8'));
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+async function run(){
+  let options,aborted=false,stored,clipboard,modal,navigation;
+  global.wx={request(o){options=o;return {abort(){aborted=true;}};},getStorageSync(){return stored;},setStorageSync(k,v){stored=v;},setClipboardData(o){clipboard=o.data;},showToast(){},showModal(o){modal=o;},pageScrollTo(){},navigateTo(o){navigation=o.url;}};
+  assert(api.validRoute(route));assert(!api.validRoute({city:'洛阳',stops:[]}));
+  const p=api.recommend({theme:'tang'});assert.equal(options.timeout,60000);assert(options.url.endsWith('/api/travel/recommend'));
+  options.success({statusCode:200,data:{code:0,data:route}});assert.equal((await p).name,route.name);
+  const fail=api.recommend({});options.fail({errMsg:'request:fail timeout'});await assert.rejects(fail,/唤醒/);
+  const invalid=api.recommend({});options.success({statusCode:200,data:{code:0,data:{}}});await assert.rejects(invalid,/不完整/);
+  const cancelled=api.recommend({});cancelled.abort();assert(aborted);options.fail({errMsg:'request:fail abort'});await assert.rejects(cancelled,e=>e.cancelled===true);
+  const ask=qa.ask('洛阳一日游');options.success({statusCode:200,data:{code:0,data:{answer:'安排好了',sources:route.sources,route,conversation_id:'test'}}});assert.equal((await ask).route.name,route.name);
+  let page;
+  const filename=path.join(__dirname,'../shici/pages/luoyang/luoyang.js');
+  vm.runInNewContext(fs.readFileSync(filename,'utf8'),{require(n){return require(path.resolve(path.dirname(filename),n));},Page(p){page=p;},wx:global.wx,setTimeout,clearTimeout,console});
+  page.setData=function(data){Object.assign(this.data,data);};
+  page.onLoad({theme:'history',pace:'full',origin:'longmen_station'});assert.equal(page.data.themeIndex,1);assert.equal(page.data.paceIndex,1);
+  page.generate();assert(page.data.loading);const req=options;page.generate();assert.strictEqual(options,req);
+  req.success({statusCode:200,data:{code:0,data:route}});await tick();assert.equal(page.data.route.name,route.name);assert(!page.data.loading);
+  page.copyItinerary();assert.equal(clipboard,route.copy_text);
+  page.saveRoute();assert(stored && page.data.hasSaved);
+  page.viewPlace({currentTarget:{dataset:{id:route.stops[0].id}}});assert(modal.content.includes('未接入实时导航'));modal.success({confirm:true});assert.equal(clipboard,route.stops[0].address);
+  page.changeTheme({currentTarget:{dataset:{index:2}}});assert.equal(page.data.route,null);
+  page.loadSaved();assert(page.data.resultOrigin.includes('本机保存'));assert.equal(page.data.route.name,route.name);
+  const shared=page.onShareAppMessage();assert(shared.path.includes('auto=1'));assert(!shared.path.includes('copy_text'));
+  page.generate();options.fail({errMsg:'request:fail network'});await tick();assert(page.data.error.includes('网络'));assert(!page.data.loading);
+  page.generate();const late=options;page.onUnload();late.success({statusCode:200,data:{code:0,data:route}});await tick();assert.equal(page.data.route,null);
+  console.log('14 travel frontend behavior groups passed');
+}
+run().catch(e=>{console.error(e);process.exitCode=1;});
