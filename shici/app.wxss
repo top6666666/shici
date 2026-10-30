@@ -1,9 +1,0 @@
-page { background: #F7F1E3; color: #2D2926; font-family: "PingFang SC", "Microsoft YaHei", sans-serif; }
-.container { padding: 30rpx 40rpx; box-sizing: border-box; }
-.card { background: #FFFDF8; border-radius: 24rpx; padding: 28rpx; margin-bottom: 24rpx; box-shadow: 0 8rpx 24rpx rgba(70,45,25,.06); }
-.title { font-size: 38rpx; font-weight: 700; color: #6F252E; }
-.subtitle { font-size: 24rpx; color: #8A817A; margin-top: 8rpx; }
-.section-title { font-size: 30rpx; font-weight: 700; margin: 28rpx 25rpx 18rpx; }
-.btn { background: #8C2F39; color: white; border-radius: 40rpx; padding: 18rpx 28rpx; text-align: center; }
-.btn-light { background: #EFE3CF; color: #6F252E; border-radius: 40rpx; padding: 18rpx 28rpx; text-align: center; }
-.tag { display: inline-block; background: #F0DFCA; color: #7A3A2E; padding: 7rpx 14rpx; border-radius: 20rpx; font-size: 21rpx; margin-right: 10rpx; }
