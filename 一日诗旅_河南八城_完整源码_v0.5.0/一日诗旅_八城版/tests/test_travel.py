@@ -44,12 +44,12 @@ def test_tuesday_keeps_museum_and_result_is_not_shared_mutable():
     r['stops'][0]['poem']['text']='WRONG'
     assert generate_route(args)['stops'][0]['poem']['text']!='WRONG'
 
-@pytest.mark.parametrize('data',[{'days':2},{'days':True},{'days':'1'},{'city':'开封'},{'theme':'unknown'},{'pace':None},{'origin':'北京'},{'travel_date':'2026-02-30'},{'travel_date':'2026-1-2'},{'extra':'injection'}])
+@pytest.mark.parametrize('data',[{'days':2},{'days':True},{'days':'1'},{'city':'安阳'},{'theme':'unknown'},{'pace':None},{'origin':'北京'},{'travel_date':'2026-02-30'},{'travel_date':'2026-1-2'},{'extra':'injection'}])
 def test_api_rejects_invalid_inputs(data):
     r=asyncio.run(post('/api/travel/recommend',data))
     assert r.status_code==400 and r.json()['data'] is None
 
-@pytest.mark.parametrize('q',['推荐洛阳两日游','洛阳夜游路线','洛阳轮椅无障碍路线','推荐开封旅游路线','洛阳下午两点开始的路线','洛阳预算100元以内的路线','洛阳半日游','洛阳不去博物馆的路线','洛阳周末旅游路线'])
+@pytest.mark.parametrize('q',['推荐洛阳两日游','洛阳夜游路线','洛阳轮椅无障碍路线','推荐安阳旅游路线','洛阳下午两点开始的路线','洛阳预算100元以内的路线','洛阳半日游','洛阳不去博物馆的路线','洛阳周末旅游路线'])
 def test_unsupported_constraints_never_silently_generate(q):
     d=parse_travel_question(q)
     assert d is not None and d['route'] is None and d['answer']

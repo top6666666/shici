@@ -1,6 +1,6 @@
 """中原诗旅智导：异步、有限等待的诗词问答接口。"""
 import asyncio
-from travel import RouteRequest, generate_route, parse_travel_question
+from travel import RouteRequest, generate_route, parse_travel_question, CITY_OPTIONS
 from knowledge import RECORDS, DATA, retrieve, session, remember, prompt, render
 import logging
 import math
@@ -20,7 +20,7 @@ from openai import AsyncOpenAI, APIConnectionError, APITimeoutError, APIStatusEr
 from pydantic import BaseModel, Field
 
 load_dotenv(Path(__file__).with_name('.env'), override=False)
-VERSION = '0.4.0-luoyang-travel'
+VERSION = '0.5.0-henan-eight-cities'
 API_KEY = os.getenv('DASHSCOPE_API_KEY', '').strip()
 BASE_URL = os.getenv('DASHSCOPE_BASE_URL', 'https://dashscope.aliyuncs.com/compatible-mode/v1').strip()
 MODEL = os.getenv('DASHSCOPE_MODEL', 'qwen3.5-plus-2026-02-15').strip()
@@ -95,7 +95,7 @@ def error(code, message, status, request_id=None):
 
 @app.exception_handler(RequestValidationError)
 async def validation_error(request: Request, exc: RequestValidationError):
-    return error(40001, '参数格式无效：请检查问题、日期及路线选项；目前仅支持洛阳一日路线', 400)
+    return error(40001, '参数格式无效：请检查问题、日期及路线选项；仅支持已收录八城的一日路线，请检查城市、主题和出发地是否匹配', 400)
 
 @app.get('/')
 async def root():
@@ -103,11 +103,16 @@ async def root():
     return {'service': '中原诗旅智导后端', 'status': 'ok', 'version': VERSION,
             'model': MODEL, 'key_configured': bool(API_KEY),
             'request_timeout_seconds': REQUEST_TIMEOUT, 'knowledge_base_enabled': True, 'knowledge_base_count': len(RECORDS), 'knowledge_base_version': DATA['version'],
-            'travel_enabled': True, 'travel_city': '洛阳', 'travel_data_version': '2026-10-27.1', 'conversation_memory_enabled': True, 'memory_scope': 'poem_ids_only_30min_single_process'}
+            'travel_enabled': True, 'travel_city': '洛阳', 'travel_cities': [c['city'] for c in CITY_OPTIONS], 'travel_data_version': '2026-11-02.1', 'conversation_memory_enabled': True, 'memory_scope': 'poem_ids_only_30min_single_process'}
 
 @app.head('/')
 async def head_root():
     return JSONResponse(content=None)
+
+@app.get('/api/travel/cities')
+async def travel_cities():
+    return {'code': 0, 'message': 'success', 'data': CITY_OPTIONS}
+
 
 @app.post('/api/travel/recommend')
 async def recommend_travel(payload: RouteRequest):
