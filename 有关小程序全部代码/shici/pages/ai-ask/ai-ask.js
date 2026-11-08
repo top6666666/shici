@@ -1,8 +1,8 @@
 const {ask}=require('../../utils/aiAsk.js');
 const {routeUrl}=require('../../utils/travel');
-const welcome=()=>({role:'ai',text:'你好，可以查询中原诗词资料，也可以问：帮我推荐洛阳一日诗旅路线。回答附来源；路线可打开详情、复制和保存。',sources:[]});
+const welcome=()=>({role:'ai',text:'你好，可以查询中原诗词资料，也可以问：帮我推荐巩义一日诗旅路线。现已收录洛阳、开封、郑州、登封、新乡、新密、巩义、荥阳。回答附来源；路线可打开详情、复制和保存。',sources:[]});
 Page({
-  data:{messages:[welcome()],input:'',loading:false,slow:false,conversationId:'',quick:['推荐洛阳一日诗旅路线，轻松一点','“洛阳城里见秋风”是谁写的？','《春夜洛城闻笛》与河南有什么联系？','《归嵩山作》中的嵩高指哪里？'],toView:''},
+  data:{messages:[welcome()],input:'',loading:false,slow:false,conversationId:'',quick:['推荐新密一日诗旅路线，轻松一点','“洛阳城里见秋风”是谁写的？','《春夜洛城闻笛》与河南有什么联系？','《归嵩山作》中的嵩高指哪里？'],toView:''},
   onLoad(){this._disposed=false;this._sequence=0;this.scrollToBottom();},
   onUnload(){this._disposed=true;this._sequence+=1;clearTimeout(this._scrollTimer);clearTimeout(this._slowTimer);if(this._request)this._request.abort();},
   onInput(e){this.setData({input:e.detail.value});},

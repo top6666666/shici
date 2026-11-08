@@ -1,8 +1,14 @@
 const {API_BASE}=require('./config');
+const CITIES=require('./travelCities');
 function validRoute(r) {
-  return !!(r && typeof r==='object' && r.city==='洛阳' && typeof r.name==='string' &&
-    typeof r.copy_text==='string' && r.preferences && Array.isArray(r.stops) && r.stops.length>0 &&
-    r.stops.every(s=>s && typeof s.name==='string' && s.poem && typeof s.poem.text==='string' && Array.isArray(s.sources)) &&
+  const c=r && CITIES.find(x=>x.city===r.city);
+  const p=r && r.preferences;
+  return !!(c && p && p.city===r.city && c.themes.some(x=>x.id===p.theme) &&
+    c.origins.some(x=>x.id===p.origin) && ['light','full'].includes(p.pace) &&
+    typeof r.name==='string' && typeof r.copy_text==='string' &&
+    Array.isArray(r.stops) && r.stops.length>0 &&
+    r.stops.every(s=>s && typeof s.id==='string' && typeof s.name==='string' &&
+      typeof s.address==='string' && s.poem && typeof s.poem.text==='string' && Array.isArray(s.sources)) &&
     Array.isArray(r.notices) && Array.isArray(r.sources));
 }
 function recommend(preferences){
@@ -15,7 +21,7 @@ function recommend(preferences){
         if(res.statusCode<200 || res.statusCode>=300 || !b || b.code!==0){
           reject(new Error(b && typeof b.message==='string'?b.message:'路线服务暂不可用，请重试'));return;
         }
-        if(!validRoute(b.data)){reject(new Error('路线数据不完整，请重试'));return;}
+        if(!validRoute(b.data) || (preferences.city && b.data.city!==preferences.city)){reject(new Error('路线数据不完整，请重试'));return;}
         resolve(b.data);
       },
       fail(err){const msg=(err && err.errMsg)||'';const e=new Error(/timeout/i.test(msg)?'服务唤醒或网络较慢，请稍后重试':'网络请求失败，请检查网络后重试');e.cancelled=/abort/i.test(msg);reject(e);}
@@ -25,7 +31,7 @@ function recommend(preferences){
   return promise;
 }
 function routeUrl(p){
-  const keys=['theme','pace','origin','travel_date'];
+  const keys=['city','theme','pace','origin','travel_date'];
   return '/pages/luoyang/luoyang?auto=1&'+keys.filter(k=>p && typeof p[k]==='string').map(k=>k+'='+encodeURIComponent(p[k])).join('&');
 }
 module.exports={recommend,validRoute,routeUrl};

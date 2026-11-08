@@ -1,0 +1,215 @@
+/* 与 backend/travel_cities.json 同步；城市目录不含密钥。 */
+module.exports=[
+  {
+    "city": "洛阳",
+    "scope": "洛阳城区 / 龙门景区",
+    "note": "龙门山水有台阶，舒缓节奏也需要步行；周一通常闭馆的博物馆会保守调整。",
+    "themes": [
+      {
+        "id": "tang",
+        "label": "唐诗寻踪"
+      },
+      {
+        "id": "history",
+        "label": "古都文化"
+      },
+      {
+        "id": "landscape",
+        "label": "龙门山水"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "市内住宿地"
+      },
+      {
+        "id": "longmen_station",
+        "label": "洛阳龙门站"
+      },
+      {
+        "id": "luoyang_station",
+        "label": "洛阳站"
+      },
+      {
+        "id": "old_town",
+        "label": "洛阳老城"
+      }
+    ]
+  },
+  {
+    "city": "开封",
+    "scope": "开封市区",
+    "note": "两站安排在开封城区；演出场次与临时闭园以景区公告为准。",
+    "themes": [
+      {
+        "id": "history",
+        "label": "汴水宋韵"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  },
+  {
+    "city": "郑州",
+    "scope": "郑州市区，不含下辖县市",
+    "note": "周一按通常闭馆规则移除博物院，保留城垣开放区域和城隍庙；节假日例外自行核实。",
+    "themes": [
+      {
+        "id": "tang",
+        "label": "商都读城"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  },
+  {
+    "city": "登封",
+    "scope": "登封市区及嵩山南麓",
+    "note": "山麓文化路线仍有步行和台阶；不是无障碍线路，也不包含少林寺与全程登山。",
+    "themes": [
+      {
+        "id": "tang",
+        "label": "嵩岳文脉"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  },
+  {
+    "city": "新乡",
+    "scope": "新乡辖域 · 辉县百泉",
+    "note": "目的地位于辉县，不在新乡市区。新乡市区往返辉县的时间另计，建议上午到达景区。",
+    "themes": [
+      {
+        "id": "landscape",
+        "label": "苏门访古"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  },
+  {
+    "city": "新密",
+    "scope": "新密老城 · 溱洧水城片区",
+    "note": "新馆营业日尚未取得稳定规则，不自动承诺任何日期开放；请先核实首站，关闭时采用外围观察。",
+    "themes": [
+      {
+        "id": "history",
+        "label": "溱洧诗经"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  },
+  {
+    "city": "巩义",
+    "scope": "巩义站街—河洛镇",
+    "note": "不包含跨城返程与首站交通；若依靠公交，请额外核实班次，勿直接把规划预算当作公交用时。",
+    "themes": [
+      {
+        "id": "tang",
+        "label": "故里读杜"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  },
+  {
+    "city": "荥阳",
+    "scope": "荥阳市区",
+    "note": "本路线以城市公园阅读为主；不包含预约讲座，不承诺诗墙展示的具体作品始终不变。",
+    "themes": [
+      {
+        "id": "tang",
+        "label": "双诗人寻踪"
+      }
+    ],
+    "origins": [
+      {
+        "id": "hotel",
+        "label": "当地住宿地"
+      },
+      {
+        "id": "city_center",
+        "label": "当地市区"
+      },
+      {
+        "id": "first_stop",
+        "label": "已到首站附近"
+      }
+    ]
+  }
+];

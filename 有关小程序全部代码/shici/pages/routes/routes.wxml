@@ -1,6 +1,6 @@
 <view class="container">
-  <view class="card luoyang-entry" bindtap="goLuoyang"><view class="tag">新 · 来源可查</view><view class="title">洛阳一日诗旅</view><view class="subtitle">选主题 · 看诗词 · 生成路线 · 保存行程</view><view class="go">安排我的洛阳之行 ›</view></view>
-  <view class="card"><view class="title">诗旅路线</view><view class="subtitle">以下为既有主题路线示例；洛阳一日推荐请点上方入口</view></view>
+  <view class="card luoyang-entry" bindtap="goLuoyang"><view class="tag">新 · 来源可查</view><view class="title">一日诗旅</view><view class="subtitle">选城市 · 看诗词 · 生成路线 · 保存行程</view><view class="go">安排我的诗旅之行 ›</view></view>
+  <view class="card"><view class="title">诗旅路线</view><view class="subtitle">以下为既有主题路线示例；八城一日推荐请点上方入口</view></view>
   <view class="card route" wx:for="{{routes}}" wx:key="id" bindtap="open" data-id="{{item.id}}">
     <view class="r-main">
       <view class="tag">{{item.type}}</view>
