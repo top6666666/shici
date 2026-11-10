@@ -9,6 +9,7 @@
     <view class="progress-text">打卡进度 {{percent}}% · 集齐全部印章解锁诗旅达人</view>
   </view>
 
+  <ip-guide wx:if="{{ipStampName}}" compact="{{true}}" pose="cai" heading="印章已点亮" message="{{ipStampName}} · 已加入本机诗旅记录，可前往诗词护照查看积分与成就。" />
   <view class="section-title">文化点位 · 逐一打卡</view>
   <view class="card point {{focus === String(item.id) ? 'focus' : ''}}" wx:for="{{points}}" wx:key="id" id="pt-{{item.id}}" bindtap="stamp" data-id="{{item.id}}">
     <view class="p-main">

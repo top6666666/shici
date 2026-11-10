@@ -19,5 +19,5 @@
     <view><b>{{quizCorrect}}</b><text>答对诗词</text></view>
   </view>
 
-  <view class="card menu"><view bindtap="go" data-url="/pages/audio/audio">🎧 我的音频收藏 <text>›</text></view><view bindtap="go" data-url="/pages/study/study">📚 我的研学任务 <text>›</text></view><view bindtap="go" data-url="/pages/creative/creative">🎁 文创与积分 <text>›</text></view></view>
+  <view class="card menu"><view bindtap="go" data-url="/packages/audio/audio">🎧 我的音频收藏 <text>›</text></view><view bindtap="go" data-url="/pages/study/study">📚 我的研学任务 <text>›</text></view><view bindtap="go" data-url="/pages/creative/creative">🎁 文创与积分 <text>›</text></view></view>
 </view>

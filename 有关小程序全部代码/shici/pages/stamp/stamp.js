@@ -16,6 +16,7 @@ Page({
     total: 0,
     stampedCount: 0,
     percent: 0,
+    ipStampName: "",
     focus: ""
   },
   onLoad(options) {
@@ -90,6 +91,7 @@ Page({
       percent: this.data.total ? Math.round(stampedCount / this.data.total * 100) : 0
     });
     const pt = pts.find(p => String(p.id) === String(id));
+    this.setData({ ipStampName: pt ? pt.name : "文化点位" });
     wx.showToast({ title: "盖章成功 · " + pt.name, icon: "none", duration: 1600 });
   },
   reset() {
@@ -103,6 +105,7 @@ Page({
           wx.removeStorageSync(STAMP_KEY);
           this.setData({
             points: this.data.points.map(p => ({ ...p, stamped: false })),
+            ipStampName: "",
             stampedCount: 0,
             percent: 0
           });
