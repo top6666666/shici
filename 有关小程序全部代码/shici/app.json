@@ -2,7 +2,6 @@
   "pages": [
     "pages/home/home",
     "pages/map/map",
-    "pages/audio/audio",
     "pages/routes/routes",
     "pages/interactive/interactive",
     "pages/study/study",
@@ -16,7 +15,6 @@
     "pages/poet-libai/poet-libai",
     "pages/poet-yishan/poet-yishan",
     "pages/stamp/stamp",
-    "pages/quiz/quiz",
     "pages/route-explore/route-explore",
     "pages/passport/passport",
     "pages/luoyang/luoyang"
@@ -57,5 +55,29 @@
     ]
   },
   "style": "v2",
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "usingComponents": {
+    "ip-figure": "/components/ip-figure/ip-figure",
+    "ip-guide": "/components/ip-guide/ip-guide"
+  },
+  "subpackages": [
+    {
+      "root": "packages/audio",
+      "pages": [
+        "audio"
+      ]
+    },
+    {
+      "root": "packages/quiz",
+      "pages": [
+        "quiz"
+      ]
+    },
+    {
+      "root": "packages/companions",
+      "pages": [
+        "index"
+      ]
+    }
+  ]
 }

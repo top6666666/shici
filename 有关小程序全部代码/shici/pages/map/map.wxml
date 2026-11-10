@@ -6,7 +6,7 @@
 
   <!-- 使用本地地图插画，避免原生地图瓦片加载异常出现黑块 -->
   <view class="map-card">
-    <image class="map-image" src="/assets/central-plains-poetry-map.png" mode="widthFix" />
+    <image class="map-image" src="/assets/central-plains-poetry-map.jpg" mode="widthFix" />
     <view class="map-note">示意地图｜选择下方文化点位查看详情</view>
   </view>
 
