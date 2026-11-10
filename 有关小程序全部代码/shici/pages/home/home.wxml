@@ -1,4 +1,6 @@
 <view class="container">
+  <ip-guide pose="lantern" heading="跟着诗旅伙伴，读诗游中原" message="蔡文姬邀你从一首诗出发，问诗、选城、读懂每一站。" />
+  <view class="ip-home-links"><navigator url="/pages/ai-ask/ai-ask">问一句诗 ›</navigator><navigator url="/pages/luoyang/luoyang">开启一日诗旅 ›</navigator></view>
   <view class="hero card">
     <view class="title">中原诗词 · 行走河南</view>
 <view class="card" bindtap="goPoem"><view class="title">河南诗词200首</view><view class="subtitle">点击查看部分诗库</view></view>
@@ -21,7 +23,7 @@
 
   <view class="ai-banner" bindtap="goAiAsk">
     <view class="ai-banner-left">
-      <view class="ai-banner-icon">🤖</view>
+      <ip-figure pose="du" height="90" />
       <view class="ai-banner-text">
         <view class="ai-banner-title">AI 问诗助手</view>
         <view class="ai-banner-sub">诗句意思 · 诗人典故 · 河南诗旅，直接问</view>

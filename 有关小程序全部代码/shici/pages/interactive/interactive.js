@@ -58,7 +58,7 @@ Page({
     wx.navigateTo({ url: map[n] || "/pages/poet-chat/poet-chat" });
   },
   goStamp() { wx.navigateTo({ url: "/pages/stamp/stamp" }); },
-  goQuiz() { wx.navigateTo({ url: "/pages/quiz/quiz" }); },
+  goQuiz() { wx.navigateTo({ url: "/packages/quiz/quiz" }); },
   goRoute() { wx.navigateTo({ url: "/pages/route-explore/route-explore" }); },
   goPassport() { wx.navigateTo({ url: "/pages/passport/passport" }); }
 });

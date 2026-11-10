@@ -6,7 +6,7 @@ Page({
   goLuoyang(){wx.navigateTo({url:"/pages/luoyang/luoyang"})},
   goMap(){wx.switchTab({url:"/pages/map/map"})},
   goRoutes(){wx.switchTab({url:"/pages/routes/routes"})},
-  goAudio(){wx.navigateTo({url:"/pages/audio/audio"})},
+  goAudio(){wx.navigateTo({url:"/packages/audio/audio"})},
   goInteractive(){wx.switchTab({url:"/pages/interactive/interactive"})},
   goStudy(){wx.navigateTo({url:"/pages/study/study"})},
   goPoem(){wx.navigateTo({url:"/pages/poem/poem"})},

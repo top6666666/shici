@@ -1,4 +1,5 @@
 <view class="container">
+  <ip-guide pose="walk" heading="认识我们的诗旅伙伴" message="蔡文姬、白居易与杜甫，以团队设计的文化 IP 形象陪伴读诗、问诗与诗旅。" />
   <view class="card"><view class="title">文创中心</view><view class="subtitle">诗词文化 · 日常生活 · 数字表达</view></view>
   <view class="product card" wx:for="{{products}}" wx:key="name">
     <view class="cover">{{item.icon}}</view><view class="pinfo"><view class="name">{{item.name}}</view><view class="subtitle">{{item.desc}}</view><view class="btn-light" bindtap="view">查看详情</view></view>

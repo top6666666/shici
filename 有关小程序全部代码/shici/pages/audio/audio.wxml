@@ -1,7 +1,0 @@
-<view class="container">
-  <view class="card hero-audio"><view class="title">听诗 · 唱诗</view><view class="subtitle">标准朗诵 / 方言唱诗 / 背景音乐</view></view>
-  <view class="card audio-card" wx:for="{{audios}}" wx:key="id">
-    <view class="audio-row"><view><view class="name">{{item.title}}</view><view class="subtitle">{{item.type}} · {{item.poet}}</view></view><view class="play" bindtap="play" data-id="{{item.id}}">{{item.playing?'⏸':'▶'}}</view></view>
-    <view class="progress"><view style="width:{{item.progress}}%"></view></view>
-  </view>
-</view>

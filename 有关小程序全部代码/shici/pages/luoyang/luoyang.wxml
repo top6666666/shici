@@ -5,6 +5,7 @@
     <view class="hero-note">从一首诗出发，让每一站都有依据。</view>
     <view class="hero-tags"><text>诗词有出处</text><text>关联说得清</text><text>行程可保存</text></view>
   </view>
+  <ip-guide pose="lantern" heading="今天想去哪座城？" message="选择城市与兴趣，开启有诗词依据的一日行程。" />
   <view class="ly-card form">
     <view class="card-title">这一次，去{{city}}读诗</view>
     <view class="field-label">选择城市</view>
@@ -32,7 +33,7 @@
       <view class="route-summary">{{route.summary}}</view>
       <view class="total">{{route.total_label}}</view>
       <view class="small">不含首程与返程；转场时间为规划预算。</view>
-      <view class="reason">{{route.reason}}</view>
+      <ip-guide compact="{{true}}" pose="lantern" heading="为什么这样安排" message="{{route.reason}}" />
       <view class="arrival">{{route.arrival}}</view>
       <view class="actions"><button class="secondary" bindtap="copyItinerary">复制行程</button><button class="secondary" bindtap="saveRoute">{{saved?'已保存本机':'保存到本机'}}</button></view>
     </view>
@@ -43,7 +44,7 @@
         <view wx:if="{{stop.description}}" class="body-text">{{stop.description}}</view>
         <view class="poem-box"><view class="poem-title">《{{stop.poem.title}}》<text> {{stop.poem.author}}</text></view><text class="poem-text" selectable="{{true}}">{{stop.poem.text}}</text><view class="poem-toggle" data-id="{{stop.id}}" bindtap="togglePoem">{{expanded[stop.id]?'收起白话解释':'展开白话解释'}} ›</view><view wx:if="{{expanded[stop.id]}}" class="meaning">{{stop.poem.meaning}}</view></view>
         <view class="relation-tag">{{stop.relation_type}}</view><view class="body-text">{{stop.relation}}</view>
-        <view class="study-task"><text class="bold">小小研学任务</text><view>{{stop.activity}}</view></view>
+        <view class="study-task"><ip-guide compact="{{true}}" pose="bai" heading="白居易文化 IP · 研学提示" message="{{stop.activity}}" /><view class="small">任务为项目设计，并非诗人原话。</view></view>
         <view class="visit-note">参观提醒：{{stop.visit_note}}</view>
         <button class="place-button" bindtap="viewPlace" data-id="{{stop.id}}">查看地点 · 复制地址</button>
         <view class="sources"><view class="source-label">本站依据 · 点击复制链接核查</view><view wx:for="{{stop.sources}}" wx:for-item="source" wx:key="id" class="source-link" bindtap="copySource" data-url="{{source.url}}">{{source.title}} ↗<view class="source-scope">{{source.scope}}</view></view></view>

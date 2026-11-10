@@ -14,6 +14,6 @@ Page({
     this.setData(getSummary());
   },
   goStamp() { wx.navigateTo({ url: "/pages/stamp/stamp" }); },
-  goQuiz() { wx.navigateTo({ url: "/pages/quiz/quiz" }); },
+  goQuiz() { wx.navigateTo({ url: "/packages/quiz/quiz" }); },
   goRoute() { wx.navigateTo({ url: "/pages/route-explore/route-explore" }); }
 });

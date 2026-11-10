@@ -10,3 +10,4 @@
 .ai-banner-title{font-size:42rpx;font-weight:700;color:#FFFDF8;letter-spacing:2rpx}
 .ai-banner-sub{font-size:26rpx;color:#F0DFCA;margin-top:12rpx}
 .ai-banner-arrow{font-size:64rpx;color:#FFFDF8;font-weight:300;margin-left:20rpx}
+.ip-home-links{display:flex;gap:20rpx;margin:-8rpx 0 24rpx}.ip-home-links navigator{flex:1;text-align:center;background:#f0dfca;color:#71313b;padding:18rpx 8rpx;border-radius:16rpx;font-size:25rpx;}

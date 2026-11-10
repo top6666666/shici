@@ -1,4 +1,5 @@
 <view class="container">
+  <ip-guide pose="cai" heading="把每次学习，留在诗词护照里" message="已点亮 {{stampedCount}} 个点位，累计 {{points}} 积分。记录保存在本机，线上点亮不代表实地到访。" />
   <view class="card hero">
     <view class="hero-title">🎫 我的诗词护照</view>
     <view class="level">{{levelName}}</view>
