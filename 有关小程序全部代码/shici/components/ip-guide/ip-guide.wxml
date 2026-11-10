@@ -1,0 +1,1 @@
+<view class="guide {{compact?'compact':''}}"><ip-figure pose="{{pose}}" height="{{compact?100:172}}"/><view class="copy"><view class="heading">{{heading}}</view><view class="message">{{message}}</view><button class="meet" bindtap="meet">认识诗旅伙伴 ›</button></view></view>

@@ -1,0 +1,1 @@
+:host{display:inline-block;flex-shrink:0}.ip-frame{position:relative;overflow:hidden;background:#fff;border-radius:20rpx;flex-shrink:0}.ip-sheet{position:absolute;max-width:none;display:block;}

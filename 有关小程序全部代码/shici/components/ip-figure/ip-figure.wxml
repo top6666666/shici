@@ -1,0 +1,1 @@
+<view class="ip-frame" style="{{frame}}" aria-label="{{label}}文化IP形象"><image class="ip-sheet" src="/assets/ip/actions.png" style="{{sheet}}" mode="scaleToFill" /></view>

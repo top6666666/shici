@@ -1,0 +1,1 @@
+Component({properties:{pose:{type:String,value:'cai'},heading:String,message:String,compact:Boolean},methods:{meet(){wx.navigateTo({url:'/packages/companions/index'});}}});
